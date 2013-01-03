@@ -15,30 +15,29 @@ Drag GmailLikeLoadingView.h amd GmailLikeLoadingView.m files to your project.
 
 Required framework: QuartzCore.framework
 
-#import "GmailLikeLoadingView.h"
+	#import "GmailLikeLoadingView.h"
 
-GmailLikeLoadingView *loadingView = [[GmailLikeLoadingView alloc] initWithFrame:CGRectMake(x, y, width, height)];
+	GmailLikeLoadingView *loadingView = [[GmailLikeLoadingView alloc] initWithFrame:CGRectMake(x, y, width, height)];
 
-[self addSubview:view];
+	[self addSubview:view];
 
-[view startAnimating];
+	[view startAnimating];
 
 ### To stop animating: ###
 
-[view stopAnimating];
+	[view stopAnimating];
 
 ### To Check view is animating: ###
 
-[view isAnimating];
+	[view isAnimating];
 
 
 ## How it looks ##
 
 <p align="center">
-  <img src="https://github.com/nikhilgohil11/GmailLikeLoading/blob/master/GmailLikeLoading.gif" alt="Gmail iOS app like loading"/>
+  <img src="http://nikhilgohil11/github/GmailLikeLoading.gif" alt="Gmail iOS app like loading"/>
 </p>
 
-![Screenshot] (https://github.com/nikhilgohil11/GmailLikeLoading/blob/master/GmailLikeLoading.gif)
 
 ## Lincense ##
 
