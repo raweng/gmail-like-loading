@@ -34,10 +34,6 @@ Required framework: QuartzCore.framework
 
 ## How it looks ##
 
-<p align="center">
-  <img src="http://nikhilgohil11/github/GmailLikeLoading.gif" alt="Gmail iOS app like loading"/>
-</p>
-
 ![GmailLikeLoading] (http://nikhilgohil11.com/github/GmailLikeLoading.gif)
 
 ## Lincense ##
