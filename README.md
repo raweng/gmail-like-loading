@@ -38,4 +38,4 @@ Required framework: QuartzCore.framework
 
 ## Lincense ##
 
-[MIT License] ( "MIT License")
+[MIT License] (http://raweng.mit-license.org/ "MIT License")
