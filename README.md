@@ -19,17 +19,17 @@ Required framework: QuartzCore.framework
 
 	GmailLikeLoadingView *loadingView = [[GmailLikeLoadingView alloc] initWithFrame:CGRectMake(x, y, width, height)];
 
-	[self addSubview:view];
+	[self addSubview:loadingView];
 
-	[view startAnimating];
+	[loadingView startAnimating];
 
 ### To stop animating: ###
 
-	[view stopAnimating];
+	[loadingView stopAnimating];
 
 ### To Check view is animating: ###
 
-	[view isAnimating];
+	[loadingView isAnimating];
 
 
 ## How it looks ##
