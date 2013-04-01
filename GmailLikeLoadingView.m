@@ -36,7 +36,6 @@ typedef enum {
 @end
 
 @implementation GmailLikeLoadingView
-@synthesize isAnimating;
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
@@ -66,7 +65,7 @@ typedef enum {
         backLayerView.center = self.center;
         previousFlipState = kFlipStop;
         flipState = kFlipBottomTop;
-        isAnimating = NO;
+        animationCount_ = 0;
         horizontal = NO;
     }
     return self;
@@ -196,7 +195,7 @@ typedef enum {
     
 	CABasicAnimation *topAnim = [CABasicAnimation animationWithKeyPath:@"transform"];
 	topAnim.beginTime = CACurrentMediaTime();
-	topAnim.duration = 0.5;
+	topAnim.duration = 0.2;
 	topAnim.fromValue = [NSValue valueWithCATransform3D:skewedIdentityTransform];
     if (flipState == kFlipBottomTop || flipState == kFlipTopBottom) {
         topAnim.toValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, -M_PI_2, x, y, z)];
@@ -310,21 +309,68 @@ typedef enum {
     }
 }
 
+-(BOOL)isAnimating {
+    return animationCount_ > 0;
+}
+
+
 -(void)stopAnimating{
-    flipState = kFlipStopAnimating;
-    isAnimating = NO;
-    [self checkFlipDirectionState];
+    if(![NSThread isMainThread])
+    {
+        [self performSelectorOnMainThread:@selector(stopAnimating) withObject:nil waitUntilDone:NO];
+        return;
+    }
+    if(animationCount_==1){
+        animationCount_ = 0;
+        flipState = kFlipStopAnimating;
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(checkFlipDirectionState) object:nil];
+        
+        [self checkFlipDirectionState];
+        
+    }
+    else {
+        animationCount_--;
+    }
+    
 }
 -(void)startAnimating{
-    flipState = kFlipBottomTop;
-    isAnimating = YES;
-    [self checkFlipDirectionState];
+    if(![NSThread isMainThread])
+    {
+        [self performSelectorOnMainThread:@selector(startAnimating) withObject:nil waitUntilDone:NO];
+        return;
+    }
+    if (animationCount_<1) {
+		animationCount_ = 1;
+        flipState = kFlipBottomTop;
+        [self checkFlipDirectionState];
+	}
+    else {
+        animationCount_++;
+    }
 }
+
+
+-(void)allStop {
+    if(![NSThread isMainThread])
+    {
+        [self performSelectorOnMainThread:@selector(allStop) withObject:nil waitUntilDone:NO];
+        return;
+    }
+    if(![self isAnimating])
+        return;
+    animationCount_ = 0;
+    flipState = kFlipStopAnimating;
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(checkFlipDirectionState) object:nil];
+    
+    [self checkFlipDirectionState];
+    
+}
+
 #pragma mark - CAAnimation delegate callbacks
 
 - (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag;
 {
-	[self checkFlipDirectionState];
+	[self performSelectorOnMainThread:@selector(checkFlipDirectionState) withObject:nil waitUntilDone:NO];
 }
 
 

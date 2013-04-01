@@ -8,9 +8,11 @@
 
 #import <UIKit/UIKit.h>
 
-@interface GmailLikeLoadingView : UIView
+@interface GmailLikeLoadingView : UIView {
+    NSInteger animationCount_;
+}
 -(void)startAnimating;
 -(void)stopAnimating;
-@property (nonatomic) BOOL isAnimating;
-
+-(void)allStop;
+-(BOOL)isAnimating;
 @end
