@@ -34,7 +34,8 @@ typedef enum {
     NSMutableArray *colorsArray;
 }
 -(void)animateView;
--(void)arrangeAnimation;
+-(void)arrangeTopFirstAnimation;
+-(void)arrangeBottomFirstAnimation;
 -(NSArray*)splitViewToImages:(UIView*)view forFlipState:(kFlipDirectionState)flipDirection;
 
 @end
@@ -183,27 +184,26 @@ typedef enum {
     
     [[secondHalfBackLayerView layer] setOpacity:1.0f];
     [[secondHalfBackLayerView layer] setOpaque:YES];
-    [self arrangeAnimation];
+    [self arrangeTopFirstAnimation];
 	    
 }
 
-
--(void)arrangeAnimation {
+-(void)arrangeTopFirstAnimation {
     CATransform3D skewedIdentityTransform = CATransform3DIdentity;
 	float zDistance = 1000.000000;
 	skewedIdentityTransform.m34 = 1.0 / -zDistance;
     float x,y,z;
     if (flipState == kFlipBottomTop || flipState == kFlipTopBottom) {
+        
         x = 1.f;
         y = 0.f;
         z = 0.f;
     }else{
+        
         x = 0.f;
         y = 1.f;
         z = 0.f;
     }
-    
-    
     CABasicAnimation *topAnim = [CABasicAnimation animationWithKeyPath:@"transform"];
 	topAnim.beginTime = CACurrentMediaTime();
 	topAnim.duration = 0.5;
@@ -264,8 +264,99 @@ typedef enum {
     [[secondHalfBackLayerView layer] setOpacity:1];
     [[secondHalfBackLayerView layer] setOpaque:YES];
 	[secondHalfBackLayerView.layer addAnimation:bottomAnim forKey:@"bottomDownFlip"];
+}
+
+-(void)arrangeBottomFirstAnimation {
+    CATransform3D skewedIdentityTransform = CATransform3DIdentity;
+	float zDistance = 1000.000000;
+	skewedIdentityTransform.m34 = 1.0 / -zDistance;
+    float x,y,z;
+    if (flipState == kFlipBottomTop || flipState == kFlipTopBottom) {
+        
+        x = 1.f;
+        y = 0.f;
+        z = 0.f;
+    }else{
+        
+        x = 0.f;
+        y = 1.f;
+        z = 0.f;
+    }
+    
+    
+    CABasicAnimation *bottomAnim = [CABasicAnimation animationWithKeyPath:@"transform"];
+	bottomAnim.beginTime = CACurrentMediaTime();
+	bottomAnim.duration = 0.5;
+    bottomAnim.fromValue = [NSValue valueWithCATransform3D:skewedIdentityTransform];
+    
+    switch (flipState) {
+        case kFlipBottomTop:
+            bottomAnim.toValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, M_PI_2, x, y, z)];
+            break;
+        case kFlipTopBottom:
+            bottomAnim.toValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, M_PI_2, x, y, z)];
+            break;
+        case kFlipLeftRight:
+            bottomAnim.toValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, -M_PI_2, x, y, z)];
+            break;
+        case kFlipRightLeft:
+            bottomAnim.toValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, -M_PI_2, x, y, z)];
+            break;
+        default:
+            break;
+    }
+    
+	bottomAnim.delegate = self;
+	bottomAnim.removedOnCompletion = NO;
+    bottomAnim.fillMode = kCAFillModeForwards;
+    
+	
+    
+    bottomAnim.timingFunction = [CAMediaTimingFunction functionWithControlPoints:0.70 :0.00 :1.00 :1.00];
+    [[secondHalfBackLayerView layer] setOpacity:1];
+    [[secondHalfBackLayerView layer] setOpaque:YES];
+	[secondHalfBackLayerView.layer addAnimation:bottomAnim forKey:@"bottomDownFlip"];
+    
+    
+    
+    
+    
+    CABasicAnimation *topAnim = [CABasicAnimation animationWithKeyPath:@"transform"];
+    topAnim.beginTime = bottomAnim.beginTime + bottomAnim.duration;
+	topAnim.duration = bottomAnim.duration;
+	topAnim.toValue = [NSValue valueWithCATransform3D:skewedIdentityTransform];
+    
+    switch (flipState) {
+        case kFlipBottomTop:
+            topAnim.fromValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, -M_PI_2, x, y, z)];
+            break;
+        case kFlipTopBottom:
+            topAnim.fromValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, -M_PI_2, x, y, z)];
+            break;
+        case kFlipLeftRight:
+            topAnim.fromValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, M_PI_2, x, y, z)];
+            break;
+        case kFlipRightLeft:
+            topAnim.fromValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, M_PI_2, x, y, z)];
+            break;
+        default:
+            break;
+    }
+    
+	topAnim.delegate = self;
+	topAnim.removedOnCompletion = NO;
+	//topAnim.fillMode = kCAFillModeForwards;
+    topAnim.fillMode = kCAFillModeBoth;
+    
+    topAnim.timingFunction = [CAMediaTimingFunction functionWithControlPoints:0.30 :1.00 :1.00 :1.00];
+    [[firstHalfFrontLayerView layer] setOpacity:1];
+    [[firstHalfFrontLayerView layer] setOpaque:YES];
+	[firstHalfFrontLayerView.layer addAnimation:topAnim forKey:@"topDownFlip"];
+    
+    
 
 }
+
 
 
 -(void)checkFlipDirectionState {
