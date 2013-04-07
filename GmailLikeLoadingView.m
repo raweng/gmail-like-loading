@@ -8,7 +8,10 @@
 
 #import "GmailLikeLoadingView.h"
 #import <QuartzCore/QuartzCore.h>
-
+#define COLOR_MEDIUM_SEA_GREEN [UIColor colorWithRed:0.0/255.0f green:147.0/255.0f blue:78.0/255.0f alpha:1.0]
+#define COLOR_MEDUIM_BLUE [UIColor colorWithRed:20.0/255.0f green:99.0/255.0f blue:233.0/255.0 alpha:1.0]
+#define COLOR_ORANGE [UIColor colorWithRed:255.0/255.0f green:199.0/255.0f blue:12.0/255.0f alpha:1.0]
+#define COLOR_MEDIUM_RED [UIColor colorWithRed:221.0/255.0f green:0.0/255.0f blue:31.0/255.0 alpha:1.0]
 typedef enum {
     kFlipStop = 0,
     kFlipTopBottom,
@@ -31,6 +34,7 @@ typedef enum {
     NSMutableArray *colorsArray;
 }
 -(void)animateView;
+-(void)arrangeAnimation;
 -(NSArray*)splitViewToImages:(UIView*)view forFlipState:(kFlipDirectionState)flipDirection;
 
 @end
@@ -44,7 +48,7 @@ typedef enum {
 
         CGFloat diameter = MIN(self.frame.size.width, self.frame.size.height);
         
-        colorsArray = [NSMutableArray arrayWithObjects:[UIColor colorWithRed:0.0/255.0f green:147.0/255.0f blue:78.0/255.0f alpha:1.0],[UIColor colorWithRed:20.0/255.0f green:99.0/255.0f blue:233.0/255.0 alpha:1.0],[UIColor colorWithRed:255.0/255.0f green:199.0/255.0f blue:12.0/255.0f alpha:1.0],[UIColor colorWithRed:221.0/255.0f green:0.0/255.0f blue:31.0/255.0 alpha:1.0], nil];
+        colorsArray = [NSMutableArray arrayWithObjects:COLOR_MEDIUM_SEA_GREEN,COLOR_MEDUIM_BLUE,COLOR_ORANGE,COLOR_MEDIUM_RED, nil];
         
         frontLayerView = [[UIView alloc] init];
         [frontLayerView setBackgroundColor:[UIColor clearColor]];
@@ -88,22 +92,22 @@ typedef enum {
 	UIImage *top = nil;
 	UIImage *bottom = nil;
 	UIGraphicsBeginImageContextWithOptions(size, view.layer.opaque, 0.f);
-	{{
-		[renderedImage drawAtPoint:CGPointZero];
-        
-		top = UIGraphicsGetImageFromCurrentImageContext();
-	}}
+	
+    [renderedImage drawAtPoint:CGPointZero];
+    
+    top = UIGraphicsGetImageFromCurrentImageContext();
+
 	UIGraphicsEndImageContext();
     
 	UIGraphicsBeginImageContextWithOptions(size, view.layer.opaque, 0.f);
-	{{
-        if (flipDirection == kFlipBottomTop || flipDirection == kFlipTopBottom) {
-            [renderedImage drawAtPoint:CGPointMake(CGPointZero.x, -renderedImage.size.height / 2)];
-        }else{
-            [renderedImage drawAtPoint:CGPointMake(-renderedImage.size.width / 2,CGPointZero.y)];
-        }
-		bottom = UIGraphicsGetImageFromCurrentImageContext();
-	}}
+	
+    if (flipDirection == kFlipBottomTop || flipDirection == kFlipTopBottom) {
+        [renderedImage drawAtPoint:CGPointMake(CGPointZero.x, -renderedImage.size.height / 2)];
+    }else{
+        [renderedImage drawAtPoint:CGPointMake(-renderedImage.size.width / 2,CGPointZero.y)];
+    }
+    bottom = UIGraphicsGetImageFromCurrentImageContext();
+	
 	UIGraphicsEndImageContext();
     
 	UIImageView *topHalfView = [[UIImageView alloc] initWithImage:top];
@@ -117,13 +121,6 @@ typedef enum {
 
 }
 
-- (CGPoint)center:(CGPoint)oldCenter movedFromAnchorPoint:(CGPoint)oldAnchorPoint toAnchorPoint:(CGPoint)newAnchorPoint withFrame:(CGRect)frame;
-{
-	CGPoint anchorPointDiff = CGPointMake(newAnchorPoint.x - oldAnchorPoint.x, newAnchorPoint.y - oldAnchorPoint.y);
-	CGPoint newCenter = CGPointMake(oldCenter.x + (anchorPointDiff.x * frame.size.width),
-									oldCenter.y + (anchorPointDiff.y * frame.size.height));
-	return newCenter;
-}
 
 -(void)animateView{
     
@@ -132,15 +129,13 @@ typedef enum {
     firstHalfFrontLayerView = [frontImages objectAtIndex:0];
 
 	secondHalfFrontLayerView = [frontImages objectAtIndex:1];
-    [firstHalfFrontLayerView setFrame:CGRectMake(0, 0, firstHalfFrontLayerView.frame.size.width, firstHalfFrontLayerView.frame.size.height)];
-    firstHalfFrontLayerView.frame = CGRectOffset(firstHalfFrontLayerView.frame, 0, 0);
+    firstHalfFrontLayerView.frame = firstHalfFrontLayerView.bounds;
     [self addSubview:firstHalfFrontLayerView];
     
-    secondHalfFrontLayerView.frame = firstHalfFrontLayerView.frame;
     if (flipState == kFlipBottomTop || flipState == kFlipTopBottom) {
-        secondHalfFrontLayerView.frame = CGRectOffset(secondHalfFrontLayerView.frame, 0.f, firstHalfFrontLayerView.frame.size.height);
+        secondHalfFrontLayerView.frame = CGRectOffset(firstHalfFrontLayerView.frame, 0.f, firstHalfFrontLayerView.frame.size.height);
     }else{
-        secondHalfFrontLayerView.frame = CGRectOffset(secondHalfFrontLayerView.frame, firstHalfFrontLayerView.frame.size.width, 0.f);
+        secondHalfFrontLayerView.frame = CGRectOffset(firstHalfFrontLayerView.frame, firstHalfFrontLayerView.frame.size.width, 0.f);
     }
     
     [self addSubview:secondHalfFrontLayerView];
@@ -159,85 +154,117 @@ typedef enum {
     secondHalfBackLayerView.frame = secondHalfFrontLayerView.frame;
     
 	[self insertSubview:secondHalfBackLayerView belowSubview:secondHalfFrontLayerView];
-
-    CATransform3D skewedIdentityTransform = CATransform3DIdentity;
-	float zDistance = 1000.000000;
-	skewedIdentityTransform.m34 = 1.0 / -zDistance;
     
     CGPoint newTopViewAnchorPoint;
     CGPoint newAnchorPointBottomHalf;
-    float x,y,z;
     
     if (flipState == kFlipBottomTop || flipState == kFlipTopBottom) {
         newTopViewAnchorPoint = CGPointMake(0.5, 1.0);
         newAnchorPointBottomHalf = CGPointMake(0.5f, 0.f);
-        x = 1.f;
-        y = 0.f;
-        z = 0.f;
     }else{
         newTopViewAnchorPoint = CGPointMake(1.0f, 0.5f);
         newAnchorPointBottomHalf = CGPointMake(0.f,0.5f);
-        x = 0.f;
-        y = 1.f;
-        z = 0.f;
     }
-	CGPoint newTopViewCenter = [self center:firstHalfFrontLayerView.center movedFromAnchorPoint:firstHalfFrontLayerView.layer.anchorPoint toAnchorPoint:newTopViewAnchorPoint withFrame:firstHalfFrontLayerView.frame];
-    
+	
 	firstHalfFrontLayerView.layer.anchorPoint = newTopViewAnchorPoint;
-    if (flipState == kFlipBottomTop || flipState == kFlipTopBottom) {
-        firstHalfFrontLayerView.center = newTopViewCenter;
-    }else{
-        [firstHalfFrontLayerView setCenter:CGPointMake(self.frame.size.width/2, self.frame.size.height/2)];
-    }
+   
+    [firstHalfFrontLayerView setCenter:CGPointMake(self.frame.size.width/2, self.frame.size.height/2)];
+    
 
     [[firstHalfFrontLayerView layer] setOpacity:1.0f];
     [[firstHalfFrontLayerView layer] setOpaque:YES];
     
-	CABasicAnimation *topAnim = [CABasicAnimation animationWithKeyPath:@"transform"];
-	topAnim.beginTime = CACurrentMediaTime();
-	topAnim.duration = 0.2;
-	topAnim.fromValue = [NSValue valueWithCATransform3D:skewedIdentityTransform];
+
+    
+	secondHalfBackLayerView.layer.anchorPoint = newAnchorPointBottomHalf;
+   
+    [secondHalfBackLayerView setCenter:CGPointMake(self.frame.size.width/2, self.frame.size.height/2)];
+
+    
+    [[secondHalfBackLayerView layer] setOpacity:1.0f];
+    [[secondHalfBackLayerView layer] setOpaque:YES];
+    [self arrangeAnimation];
+	    
+}
+
+
+-(void)arrangeAnimation {
+    CATransform3D skewedIdentityTransform = CATransform3DIdentity;
+	float zDistance = 1000.000000;
+	skewedIdentityTransform.m34 = 1.0 / -zDistance;
+    float x,y,z;
     if (flipState == kFlipBottomTop || flipState == kFlipTopBottom) {
-        topAnim.toValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, -M_PI_2, x, y, z)];
+        x = 1.f;
+        y = 0.f;
+        z = 0.f;
     }else{
-        topAnim.toValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, M_PI_2, x, y, z)];
+        x = 0.f;
+        y = 1.f;
+        z = 0.f;
     }
+    
+    
+    CABasicAnimation *topAnim = [CABasicAnimation animationWithKeyPath:@"transform"];
+	topAnim.beginTime = CACurrentMediaTime();
+	topAnim.duration = 0.5;
+	topAnim.fromValue = [NSValue valueWithCATransform3D:skewedIdentityTransform];
+    
+    switch (flipState) {
+        case kFlipBottomTop:
+            topAnim.toValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, -M_PI_2, x, y, z)];
+            break;
+        case kFlipTopBottom:
+            topAnim.toValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, -M_PI_2, x, y, z)];
+            break;
+        case kFlipLeftRight:
+            topAnim.toValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, M_PI_2, x, y, z)];
+            break;
+        case kFlipRightLeft:
+            topAnim.toValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, M_PI_2, x, y, z)];
+            break;
+        default:
+            break;
+    }
+    
 	topAnim.delegate = self;
 	topAnim.removedOnCompletion = NO;
 	topAnim.fillMode = kCAFillModeForwards;
 	topAnim.timingFunction = [CAMediaTimingFunction functionWithControlPoints:0.70 :0.00 :1.00 :1.00];
-    [[firstHalfFrontLayerView layer] setOpacity:0.955555f];
+    [[firstHalfFrontLayerView layer] setOpacity:1];
     [[firstHalfFrontLayerView layer] setOpaque:YES];
 	[firstHalfFrontLayerView.layer addAnimation:topAnim forKey:@"topDownFlip"];
     
-	CGPoint newBottomHalfCenter = [self center:secondHalfBackLayerView.center movedFromAnchorPoint:secondHalfBackLayerView.layer.anchorPoint toAnchorPoint:newAnchorPointBottomHalf withFrame:secondHalfBackLayerView.frame];
-	secondHalfBackLayerView.layer.anchorPoint = newAnchorPointBottomHalf;
-    if (flipState == kFlipBottomTop || flipState == kFlipTopBottom) {
-        secondHalfBackLayerView.center = newBottomHalfCenter;
-    }else{
-        [secondHalfBackLayerView setCenter:CGPointMake(self.frame.size.width/2, self.frame.size.height/2)];
-
-    }
-    [[secondHalfBackLayerView layer] setOpacity:1.0f];
-    [[secondHalfBackLayerView layer] setOpaque:YES];
     
-	CABasicAnimation *bottomAnim = [CABasicAnimation animationWithKeyPath:@"transform"];
+    CABasicAnimation *bottomAnim = [CABasicAnimation animationWithKeyPath:@"transform"];
 	bottomAnim.beginTime = topAnim.beginTime + topAnim.duration;
 	bottomAnim.duration = topAnim.duration;
-    if (flipState == kFlipBottomTop || flipState == kFlipTopBottom) {
-        bottomAnim.fromValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, M_PI_2, x, y, z)];
-    }else{
-        bottomAnim.fromValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, -M_PI_2, x, y, z)];
+    
+    switch (flipState) {
+        case kFlipBottomTop:
+            bottomAnim.fromValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, M_PI_2, x, y, z)];
+            break;
+        case kFlipTopBottom:
+            bottomAnim.fromValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, M_PI_2, x, y, z)];
+            break;
+        case kFlipLeftRight:
+            bottomAnim.fromValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, -M_PI_2, x, y, z)];
+            break;
+        case kFlipRightLeft:
+            bottomAnim.fromValue = [NSValue valueWithCATransform3D:CATransform3DRotate(skewedIdentityTransform, -M_PI_2, x, y, z)];
+            break;
+        default:
+            break;
     }
+    
 	bottomAnim.toValue = [NSValue valueWithCATransform3D:skewedIdentityTransform];
 	bottomAnim.delegate = self;
 	bottomAnim.removedOnCompletion = NO;
 	bottomAnim.fillMode = kCAFillModeBoth;
 	bottomAnim.timingFunction = [CAMediaTimingFunction functionWithControlPoints:0.30 :1.00 :1.00 :1.00];
-    [[secondHalfBackLayerView layer] setOpacity:0.955555f];
+    [[secondHalfBackLayerView layer] setOpacity:1];
     [[secondHalfBackLayerView layer] setOpaque:YES];
 	[secondHalfBackLayerView.layer addAnimation:bottomAnim forKey:@"bottomDownFlip"];
-    
+
 }
 
 
