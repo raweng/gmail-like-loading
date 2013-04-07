@@ -125,7 +125,8 @@ typedef enum {
 
 -(void)animateView{
     
-	NSArray *frontImages = [self splitViewToImages:frontLayerView forFlipState:flipState];
+    //If bottom first animation, use backLayerView, otherwise use frontLayerView
+	NSArray *frontImages = [self splitViewToImages:backLayerView forFlipState:flipState];
     
     firstHalfFrontLayerView = [frontImages objectAtIndex:0];
 
@@ -143,7 +144,8 @@ typedef enum {
 
 	[frontLayerView removeFromSuperview];
     
-	NSArray *backImages = [self splitViewToImages:backLayerView forFlipState:flipState];
+    //If bottom first animation, use frontLayerView, otherwise use backLayerView
+	NSArray *backImages = [self splitViewToImages:frontLayerView forFlipState:flipState];
     
     firstHalfBackLayerView = [backImages objectAtIndex:0];
 
@@ -184,7 +186,7 @@ typedef enum {
     
     [[secondHalfBackLayerView layer] setOpacity:1.0f];
     [[secondHalfBackLayerView layer] setOpaque:YES];
-    [self arrangeTopFirstAnimation];
+    [self arrangeBottomFirstAnimation];
 	    
 }
 
