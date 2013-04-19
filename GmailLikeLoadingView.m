@@ -30,13 +30,13 @@ typedef enum {
 	UIView *secondHalfFrontLayerView;
 	UIView *firstHalfBackLayerView;
 	UIView *secondHalfBackLayerView;
-    BOOL horizontal;
     NSMutableArray *colorsArray;
 }
 -(void)animateView;
 -(void)arrangeTopFirstAnimation;
 -(void)arrangeBottomFirstAnimation;
 -(NSArray*)splitViewToImages:(UIView*)view forFlipState:(kFlipDirectionState)flipDirection;
+-(BOOL)isBottomFirstAnimation;
 
 @end
 
@@ -71,7 +71,6 @@ typedef enum {
         previousFlipState = kFlipStop;
         flipState = kFlipBottomTop;
         animationCount_ = 0;
-        horizontal = NO;
     }
     return self;
 }
@@ -124,9 +123,14 @@ typedef enum {
 
 
 -(void)animateView{
-    
     //If bottom first animation, use backLayerView, otherwise use frontLayerView
-	NSArray *frontImages = [self splitViewToImages:backLayerView forFlipState:flipState];
+	NSArray *frontImages = nil;
+    if ([self isBottomFirstAnimation]) {
+        frontImages = [self splitViewToImages:backLayerView forFlipState:flipState];
+    }
+    else {
+        frontImages = [self splitViewToImages:frontLayerView forFlipState:flipState];
+    }
     
     firstHalfFrontLayerView = [frontImages objectAtIndex:0];
 
@@ -145,7 +149,13 @@ typedef enum {
 	[frontLayerView removeFromSuperview];
     
     //If bottom first animation, use frontLayerView, otherwise use backLayerView
-	NSArray *backImages = [self splitViewToImages:frontLayerView forFlipState:flipState];
+	NSArray *backImages = nil;
+    if ([self isBottomFirstAnimation]) {
+        backImages = [self splitViewToImages:frontLayerView forFlipState:flipState];
+    }
+    else {
+        backImages = [self splitViewToImages:backLayerView forFlipState:flipState];
+    }
     
     firstHalfBackLayerView = [backImages objectAtIndex:0];
 
@@ -186,9 +196,25 @@ typedef enum {
     
     [[secondHalfBackLayerView layer] setOpacity:1.0f];
     [[secondHalfBackLayerView layer] setOpaque:YES];
-    [self arrangeBottomFirstAnimation];
+    
+    if ([self isBottomFirstAnimation]) {
+        [self arrangeBottomFirstAnimation];
+    }
+    else {
+        [self arrangeTopFirstAnimation];
+    }
 	    
 }
+
+-(BOOL)isBottomFirstAnimation {
+    if (flipState == kFlipTopBottom || flipState == kFlipLeftRight) {
+        return NO;
+    }
+    else {
+        return YES;
+    }
+}
+
 
 -(void)arrangeTopFirstAnimation {
     CATransform3D skewedIdentityTransform = CATransform3DIdentity;
@@ -350,6 +376,7 @@ typedef enum {
 	//topAnim.fillMode = kCAFillModeForwards;
     topAnim.fillMode = kCAFillModeBoth;
     
+    
     topAnim.timingFunction = [CAMediaTimingFunction functionWithControlPoints:0.30 :1.00 :1.00 :1.00];
     [[firstHalfFrontLayerView layer] setOpacity:1];
     [[firstHalfFrontLayerView layer] setOpaque:YES];
@@ -362,41 +389,47 @@ typedef enum {
 
 
 -(void)checkFlipDirectionState {
+    static int i = 0;
     switch (flipState) {
         case kFlipBottomTop:
         {
-            horizontal = NO;
+            i = 0;
             [self animateView];
             previousFlipState = kFlipBottomTop;
-            flipState = kFlipTopBottom;
+            flipState = kFlipStop;
         }
             break;
         case kFlipTopBottom:
         {
-            horizontal = NO;
-			[secondHalfBackLayerView.superview bringSubviewToFront:secondHalfBackLayerView];
+            i = 0;
+			[self animateView];
             previousFlipState = kFlipTopBottom;
             flipState = kFlipStop;
         }
             break;
         case kFlipLeftRight:
         {
-            horizontal = YES;
+            i = 0;
             [self animateView];
             previousFlipState = kFlipLeftRight;
-            flipState = kFlipRightLeft;
+            flipState = kFlipStop;
         }
             break;
         case kFlipRightLeft:
         {
-            horizontal = YES;
-            [secondHalfBackLayerView.superview bringSubviewToFront:secondHalfBackLayerView];
+            i = 0;
+            [self animateView];
             previousFlipState = kFlipRightLeft;
             flipState = kFlipStop;
         }
             break;
         case kFlipStop:
         {
+            if (!i) {
+                i++;
+                break;
+            }
+            i = 0;
             [firstHalfFrontLayerView removeFromSuperview];
 			[secondHalfFrontLayerView removeFromSuperview];
 			[firstHalfBackLayerView removeFromSuperview];
@@ -405,11 +438,27 @@ typedef enum {
             CGColorRef color = frontLayerView.layer.backgroundColor;
             frontLayerView.layer.backgroundColor = backLayerView.layer.backgroundColor;
             backLayerView.layer.backgroundColor = color;
-            if (horizontal == NO) {
-                flipState = kFlipLeftRight;
-            }else{
-                flipState = kFlipBottomTop;
+           
+            
+            
+            switch (previousFlipState) {
+                case kFlipBottomTop:
+                    flipState = kFlipRightLeft;
+                    break;
+                case kFlipTopBottom:
+                    flipState = kFlipLeftRight;
+                    break;
+                case kFlipLeftRight:
+                    flipState = kFlipBottomTop;
+                    break;
+                case kFlipRightLeft:
+                    flipState = kFlipTopBottom;
+                    break;
+                default:
+                    break;
             }
+            
+            
             UIColor *backColor = [colorsArray objectAtIndex:0];
             [self moveObjectsInArray];
             backLayerView.layer.backgroundColor = backColor.CGColor;
@@ -461,7 +510,7 @@ typedef enum {
     }
     if (animationCount_<1) {
 		animationCount_ = 1;
-        flipState = kFlipBottomTop;
+        flipState = kFlipTopBottom;
         [self checkFlipDirectionState];
 	}
     else {
