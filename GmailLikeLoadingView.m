@@ -145,8 +145,7 @@ typedef enum {
     }
     
     [self addSubview:secondHalfFrontLayerView];
-
-	[frontLayerView removeFromSuperview];
+   
     
     //If bottom first animation, use frontLayerView, otherwise use backLayerView
 	NSArray *backImages = nil;
@@ -254,7 +253,7 @@ typedef enum {
             break;
     }
     
-	topAnim.delegate = self;
+	topAnim.delegate = nil;
 	topAnim.removedOnCompletion = NO;
 	topAnim.fillMode = kCAFillModeForwards;
 	topAnim.timingFunction = [CAMediaTimingFunction functionWithControlPoints:0.70 :0.00 :1.00 :1.00];
@@ -334,7 +333,7 @@ typedef enum {
             break;
     }
     
-	bottomAnim.delegate = self;
+	bottomAnim.delegate = nil;
 	bottomAnim.removedOnCompletion = NO;
     bottomAnim.fillMode = kCAFillModeForwards;
     
@@ -389,11 +388,9 @@ typedef enum {
 
 
 -(void)checkFlipDirectionState {
-    static int i = 0;
     switch (flipState) {
         case kFlipBottomTop:
         {
-            i = 0;
             [self animateView];
             previousFlipState = kFlipBottomTop;
             flipState = kFlipStop;
@@ -401,7 +398,6 @@ typedef enum {
             break;
         case kFlipTopBottom:
         {
-            i = 0;
 			[self animateView];
             previousFlipState = kFlipTopBottom;
             flipState = kFlipStop;
@@ -409,7 +405,6 @@ typedef enum {
             break;
         case kFlipLeftRight:
         {
-            i = 0;
             [self animateView];
             previousFlipState = kFlipLeftRight;
             flipState = kFlipStop;
@@ -417,7 +412,6 @@ typedef enum {
             break;
         case kFlipRightLeft:
         {
-            i = 0;
             [self animateView];
             previousFlipState = kFlipRightLeft;
             flipState = kFlipStop;
@@ -425,11 +419,6 @@ typedef enum {
             break;
         case kFlipStop:
         {
-            if (!i) {
-                i++;
-                break;
-            }
-            i = 0;
             [firstHalfFrontLayerView removeFromSuperview];
 			[secondHalfFrontLayerView removeFromSuperview];
 			[firstHalfBackLayerView removeFromSuperview];
