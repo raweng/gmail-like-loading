@@ -255,12 +255,13 @@ typedef enum {
     
 	topAnim.delegate = nil;
 	topAnim.removedOnCompletion = NO;
-	topAnim.fillMode = kCAFillModeForwards;
+    
+	topAnim.fillMode = kCAFillModeBoth;
 	topAnim.timingFunction = [CAMediaTimingFunction functionWithControlPoints:0.70 :0.00 :1.00 :1.00];
     [[firstHalfFrontLayerView layer] setOpacity:1];
     [[firstHalfFrontLayerView layer] setOpaque:YES];
 	[firstHalfFrontLayerView.layer addAnimation:topAnim forKey:@"topDownFlip"];
-    
+    [self bringSubviewToFront:firstHalfFrontLayerView];
     
     CABasicAnimation *bottomAnim = [CABasicAnimation animationWithKeyPath:@"transform"];
 	bottomAnim.beginTime = topAnim.beginTime + topAnim.duration;
@@ -291,6 +292,7 @@ typedef enum {
     [[secondHalfBackLayerView layer] setOpacity:1];
     [[secondHalfBackLayerView layer] setOpaque:YES];
 	[secondHalfBackLayerView.layer addAnimation:bottomAnim forKey:@"bottomDownFlip"];
+    [self bringSubviewToFront:secondHalfBackLayerView];
 }
 
 -(void)arrangeBottomFirstAnimation {
@@ -343,7 +345,7 @@ typedef enum {
     [[secondHalfBackLayerView layer] setOpacity:1];
     [[secondHalfBackLayerView layer] setOpaque:YES];
 	[secondHalfBackLayerView.layer addAnimation:bottomAnim forKey:@"bottomDownFlip"];
-    
+    [self bringSubviewToFront:secondHalfBackLayerView];
     
     
     
@@ -381,7 +383,8 @@ typedef enum {
     [[firstHalfFrontLayerView layer] setOpaque:YES];
 	[firstHalfFrontLayerView.layer addAnimation:topAnim forKey:@"topDownFlip"];
     
-    
+    [self bringSubviewToFront:firstHalfFrontLayerView];
+
 
 }
 
