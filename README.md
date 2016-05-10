@@ -8,6 +8,9 @@ Easy to drop into your project like a UIView.
 
 You can resize the frame to whatever size.
 
+## Blog
+
+[https://www.built.io/blog/2013/02/gmaillikeloading/] (https://www.built.io/blog/2013/02/gmaillikeloading/ "https://www.built.io/blog/2013/02/gmaillikeloading/")
 
 ## How to use ##
 	
